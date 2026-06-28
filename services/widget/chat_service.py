@@ -23,19 +23,24 @@ class WidgetChatService:
         }
         system = system_prompts.get(source, system_prompts["hdm_portfolio"])
 
-        services = (data or {}).get("services") or (context or {}).get("services")
-        apps = (data or {}).get("apps") or (context or {}).get("apps")
-        projects = (data or {}).get("projects") or (context or {}).get("projects")
-        company = (data or {}).get("company") or (context or {}).get("company")
-        social = (data or {}).get("socialLinks") or (context or {}).get("socialLinks")
+        d = data or {}
+        c = context or {}
+
+        services = d.get("services") or c.get("services")
+        apps = d.get("apps") or c.get("apps")
+        projects = d.get("projects") or c.get("projects")
+        company = d.get("company") or c.get("company")
+        social = d.get("socialLinks") or c.get("socialLinks")
+        documents = d.get("documents") or c.get("documents")
+        software = d.get("software") or c.get("software")
+        paymentMethods = d.get("paymentMethods") or c.get("paymentMethods")
+        pricing = d.get("pricing") or c.get("pricing")
+        categories = d.get("categories") or c.get("categories")
 
         parts = ["\n\nAnswer questions using ONLY the information provided below. Do NOT invent anything."]
 
-        if apps:
-            parts.append("\nOUR APPS:")
-            for a in apps:
-                parts.append(f"  • {a.get('name','')}: {a.get('description','')}")
-            parts.append("\nWhen asked about apps, list all apps above.")
+        if company:
+            parts.append(f"\nCOMPANY: {company.get('name','')} | {company.get('email','')} | {company.get('phone','')}")
 
         if services:
             parts.append("\nOUR SERVICES:")
@@ -44,13 +49,56 @@ class WidgetChatService:
                 desc = s.get("description", "")
                 parts.append(f"  • {name}: {desc}" if desc else f"  • {name}")
 
+        if apps:
+            parts.append("\nOUR APPS:")
+            for a in apps:
+                name = a.get("title") or a.get("name", "")
+                desc = a.get("description", "")
+                parts.append(f"  • {name}: {desc}" if desc else f"  • {name}")
+            parts.append("When asked about apps, list all apps above.")
+
         if projects:
             parts.append("\nOUR PROJECTS:")
             for p in projects:
-                parts.append(f"  • {p.get('name','')}: {p.get('description','')}")
+                name = p.get("title") or p.get("name", "")
+                desc = p.get("description", "")
+                parts.append(f"  • {name}: {desc}" if desc else f"  • {name}")
 
-        if company:
-            parts.append(f"\nCOMPANY: {company.get('name','')} | {company.get('email','')} | {company.get('phone','')}")
+        if documents:
+            parts.append("\nDOCUMENTS FOR SALE:")
+            for doc in documents:
+                name = doc.get("title") or doc.get("name", "")
+                desc = doc.get("description", "")
+                price = doc.get("price", 0)
+                line = f"  • {name}: KSh {price}"
+                if desc:
+                    line += f" — {desc}"
+                parts.append(line)
+            parts.append("When asked what's for sale, list all documents above with prices.")
+
+        if software:
+            parts.append("\nSOFTWARE FOR SALE:")
+            for sw in software:
+                name = sw.get("title") or sw.get("name", "")
+                desc = sw.get("description", "")
+                price = sw.get("price", 0)
+                line = f"  • {name}: KSh {price}"
+                if desc:
+                    line += f" — {desc}"
+                parts.append(line)
+
+        if categories:
+            parts.append(f"\nCATEGORIES: {', '.join(categories) if isinstance(categories, list) else categories}")
+
+        if pricing:
+            parts.append(f"\nPRICING INFO: {pricing}")
+
+        if paymentMethods:
+            parts.append("\nPAYMENT METHODS:")
+            for pm in paymentMethods:
+                name = pm.get("title") or pm.get("name", "")
+                desc = pm.get("description", "")
+                parts.append(f"  • {name}: {desc}" if desc else f"  • {name}")
 
         if social:
             parts.append(f"\nLINKS: {', '.join(social.keys())}")
