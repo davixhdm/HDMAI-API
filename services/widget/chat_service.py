@@ -88,7 +88,16 @@ class WidgetChatService:
                 parts.append(line)
 
         if categories:
-            parts.append(f"\nCATEGORIES: {', '.join(categories) if isinstance(categories, list) else categories}")
+            if isinstance(categories, list):
+                cat_names = []
+                for cat in categories:
+                    if isinstance(cat, dict):
+                        cat_names.append(cat.get("title") or cat.get("name", ""))
+                    else:
+                        cat_names.append(str(cat))
+                parts.append(f"\nCATEGORIES: {', '.join(cat_names)}")
+            else:
+                parts.append(f"\nCATEGORIES: {categories}")
 
         if pricing:
             parts.append(f"\nPRICING INFO: {pricing}")
